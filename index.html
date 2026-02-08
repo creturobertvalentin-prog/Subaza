@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--https://github.com/Abhay557/Will-you-be-my-Valentine-->
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Este Victor bun la FIFA?</title>
+
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background-color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 24px 12px;
+      gap: 12px;
+    }
+
+    h1 { margin: 0 0 6px; }
+
+    .button-container {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      align-items: center;
+      margin: 6px 0 0;
+      position: relative;
+      z-index: 10;
+    }
+
+    .button, .button1 {
+      font-size: 16px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+      user-select: none;
+    }
+
+    .button { background-color: lightgreen; }
+    .button1 { background-color: #F44336; color: #fff; }
+
+    .button:hover, .button1:hover { transform: scale(1.06); }
+
+    /* Message area under buttons (so it never overlaps the GIF) */
+    .no-message {
+      min-height: 26px;
+      font-size: 18px;
+      font-weight: 700;
+      color: #d10000;
+      margin-top: 6px;
+      z-index: 5;
+    }
+
+    .gif-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 300px;
+      height: auto;
+      position: relative;
+      z-index: 1;
+      margin-top: 10px;
+    }
+
+    .gif-container img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 10px;
+      mix-blend-mode: multiply;
+    }
+
+    /* Modal stays at top (not over the GIF/buttons) */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 1000;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: white;
+      padding: 18px 22px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+      border-radius: 10px;
+      text-align: center;
+      font-size: 20px;
+      font-weight: bold;
+      color: red;
+      z-index: 1001;
+      max-width: min(520px, 92vw);
+    }
+
+    .modal button {
+      margin-top: 15px;
+      padding: 10px 15px;
+      background-color: red;
+      color: white;
+      border-radius: 8px;
+      font-size: 16px;
+      border: none;
+      cursor: pointer;
+    }
+
+    .modal button:hover { background-color: darkred; }
+
+    /* Important: make z-index work for buttons when we move "No" */
+    #noButton { position: relative; z-index: 20; }
+    #yesButton { position: relative; z-index: 20; }
+  </style>
+</head>
+
+<body>
+
+  <h1>Este Victor bun la FIFA?</h1>
+
+  <div class="button-container">
+    <button class="button" id="yesButton">Yes </button>
+    <button class="button1" id="noButton">No 🙃</button>
+  </div>
+
+  <!-- ✅ Funny "No" messages go here (not on the GIF, not on the button) -->
+  <div class="no-message" id="noMessage"></div>
+
+  <div class="modal-overlay" id="modalOverlay"></div>
+  <div class="modal" id="modal">
+    <p id="modalText"></p>
+    <button onclick="closeModal()">Close</button>
+  </div>
+
+  <div class="gif-container">
+    <img src="victor.gif" alt="Cute GIF">
+  </div>
+
+  <script>
+    let noCount = 0;
+
+    const yesButton = document.getElementById("yesButton");
+    const noButton = document.getElementById("noButton");
+    const noMessage = document.getElementById("noMessage");
+
+    const modal = document.getElementById("modal");
+    const modalOverlay = document.getElementById("modalOverlay");
+    const modalText = document.getElementById("modalText");
+
+    const noTexts = [
+      "Raspuns corect",
+      "Raspuns corect din nou",
+      "A avut noroc, el incearca",
+      "I s-a tras de la raceala",
+      "Ole ole!!"
+    ];
+
+    noButton.addEventListener("click", () => {
+      // ✅ show the correct message starting from the first click
+      if (noCount < noTexts.length) {
+        noMessage.textContent = noTexts[noCount];
+      } else {
+        openModal("Poate data viitoare");
+        return;
+      }
+
+      // Increase Yes button size (gently)
+      const currentSize = parseFloat(getComputedStyle(yesButton).fontSize);
+      yesButton.style.fontSize = (currentSize + 8) + "px";
+
+      const style = getComputedStyle(yesButton);
+      const padY = parseFloat(style.paddingTop);
+      const padX = parseFloat(style.paddingLeft);
+      yesButton.style.padding = (padY + 2) + "px " + (padX + 6) + "px";
+
+      // ✅ Make "No" run away BUT keep it on screen (safe area)
+      const margin = 16;
+      const safeTop = 80; // avoid top area
+      const safeBottom = 80; // avoid bottom edge
+
+      const maxX = window.innerWidth - noButton.offsetWidth - margin;
+      const maxY = window.innerHeight - noButton.offsetHeight - safeBottom;
+
+      const x = Math.max(margin, Math.random() * Math.max(margin, maxX));
+      const y = Math.max(safeTop, Math.random() * Math.max(safeTop, maxY));
+
+      noButton.style.position = "fixed";
+      noButton.style.left = x + "px";
+      noButton.style.top = y + "px";
+
+      noCount++;
+    });
+
+    yesButton.addEventListener("click", () => {
+      openModal("Ei da, a avut noroc!");
+    });
+
+    function openModal(message) {
+      modalText.textContent = message;
+      modal.style.display = "block";
+      modalOverlay.style.display = "block";
+    }
+
+    function closeModal() {
+      modal.style.display = "none";
+      modalOverlay.style.display = "none";
+    }
+  </script>
+</body>
+</html>
+
+
+
+
